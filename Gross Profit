@@ -1,0 +1,27 @@
+Gross Profit Queries(Period, Products)
+DECLARE @FROM AS DATETIME = CAST('2019/01/01' AS DATETIME)
+DECLARE @TO AS DATETIME = CAST('2019/05/23' AS DATETIME)
+SELECT i.ItemCode
+     , i.ItemName
+     , ISNULL(s.Quantity, 0) - ISNULL(c.Quantity, 0) AS Quantity
+     , ISNULL(s.LineTotal, 0) - ISNULL(c.LineTotal, 0) AS TotalAmount
+     , ISNULL(s.GrossProfit, 0) - ISNULL(c.GrossProfit, 0) AS GrossProfit
+     , (ISNULL(s.GrossProfit, 0) - ISNULL(c.GrossProfit, 0))
+       / CASE
+          WHEN ISNULL(s.LineTotal, 0) - ISNULL(c.LineTotal, 0) = 0 THEN 1
+          ELSE ISNULL(s.LineTotal, 0) - ISNULL(c.LineTotal, 0)
+         END AS GrossProfitPercentage
+FROM OITM i
+     LEFT OUTER JOIN (SELECT sr.ItemCode, SUM(sr.Quantity) AS Quantity,  SUM(sr.LineTotal) AS LineTotal
+                          , (SUM(sr.LineTotal) - SUM(sr.GrossBuyPr * sr.Quantity)) AS GrossProfit
+                      FROM INV1 sr
+                           INNER JOIN OINV sh ON sr.DocEntry = sh.DocEntry
+                      WHERE sh.DocDate BETWEEN @FROM AND @TO
+                      GROUP BY sr.ItemCode) s ON i.ItemCode = s.ItemCode
+     LEFT OUTER JOIN (SELECT cr.ItemCode, SUM(cr.Quantity) AS Quantity,  SUM(cr.LineTotal) AS LineTotal
+                           , (SUM(cr.LineTotal) - SUM(cr.GrossBuyPr * cr.Quantity)) AS GrossProfit
+                      FROM RIN1 cr
+                           INNER JOIN ORIN ch ON cr.DocEntry = ch.DocEntry
+                      WHERE ch.DocDate BETWEEN @FROM AND @TO
+                      GROUP BY cr.ItemCode) c ON i.ItemCode = c.ItemCode
+ORDER BY GrossProfit DESC
