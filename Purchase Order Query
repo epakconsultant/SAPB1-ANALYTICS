@@ -1,0 +1,9 @@
+SELECT DISTINCT T0.[CardCode] as [BP Code], T0.[CardName] as [BP Name], 
+T0.[DocNum] as [PO Number], T0.[DocDate] as [PO Date], T1.[ItemCode] as [Stock Item], 
+T1.[Quantity], T1.[OpenQty], T2.[DocNum] as [Goods Receipt No], T2.[DocDate]as [GR Date], 
+T3.[ItemCode] as [Stock Item], T3.[Quantity], T3.[OpenQty] as [Left to Deliver] 
+FROM dbo.OPOR T0  
+INNER JOIN dbo.POR1 T1 ON T0.DocEntry = T1.DocEntry
+LEFT JOIN dbo.PDN1 T3 ON T3.BaseEntry = T0.DocEntry AND T3.BaseLine = T1.Linenum
+LEFT JOIN dbo.OPDN T2 ON T2.DocEntry = T3.DocEntry 
+WHERE T0.[DocDate]  >=[%0] AND T0.[DocDate] <=[%1] AND T0.[CardName] =[%2]
