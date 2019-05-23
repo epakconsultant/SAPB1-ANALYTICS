@@ -1,0 +1,67 @@
+DECLARE
+
+@StartDate DATETIME,
+@EndDate DATETIME,
+@Dummy INTEGER
+
+SELECT TOP 1 @Dummy = DocNum
+FROM OPCH T0
+WHERE T0.DocDate >= [%1]
+AND T0.DocDate <= [%2]
+
+SELECT
+
+@StartDate= '[%1]' ,
+@EndDate = '[%2]'
+
+SELECT DISTINCT
+T0.DocEntry,
+T0.DocNum AS 'AP Inv Num',
+CONVERT(VARCHAR(10), T0.DocDate, 3) AS 'Bill Date',
+T0.CardName AS 'Vendor Name',
+T1.Dscription AS 'Item Description', 
+T1.Quantity,
+T1.Price AS 'Price',
+T1.TaxCode,
+T1.LineTotal AS 'Basic Line Total',
+
+(SELECT DISTINCT ISNULL (SUM(PCH4.TaxSum),0)
+FROM PCH4
+WHERE PCH4.StaType = -90
+AND PCH4.DocEntry = T0.DocEntry
+AND PCH4.LineNum = T1.LineNum) AS 'BED',
+
+(SELECT DISTINCT ISNULL (SUM(PCH4.TaxSum),0)
+FROM PCH4
+WHERE PCH4.StaType = -60
+AND PCH4.DocEntry = T0.DocEntry
+AND PCH4.LineNum = T1.LineNum) AS 'Cess',
+
+(SELECT DISTINCT ISNULL (SUM(PCH4.TaxSum),0)
+FROM PCH4
+WHERE PCH4.StaType = 9
+AND PCH4.DocEntry = T0.DocEntry
+AND PCH4.LineNum = T1.LineNum) AS 'HeCess',
+
+(SELECT DISTINCT ISNULL (SUM(PCH4.TaxSum),0)
+FROM PCH4
+WHERE PCH4.StaType = 1
+AND PCH4.DocEntry = T0.DocEntry
+AND PCH4.LineNum = T1.LineNum) AS 'VAT',
+
+(SELECT DISTINCT ISNULL (SUM(PCH4.TaxSum),0)
+FROM PCH4
+WHERE PCH4.StaType = 8
+AND PCH4.DocEntry = T0.DocEntry
+AND PCH4.LineNum = T1.LineNum) AS 'CST',
+
+T0.Comments
+
+FROM OPCH T0
+
+INNER JOIN PCH1 T1
+ON T0.DocEntry = T1.DocEntry
+
+WHERE T0.DocDate >= @StartDate
+AND T0.DocDate <= @EndDate
+AND T1.TargetType < > 19
