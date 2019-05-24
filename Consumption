@@ -1,0 +1,41 @@
+/* select * from oinm  t1  */
+
+DECLARE @D1 DATETIME
+
+DECLARE @D2 DATETIME
+
+DECLARE @D3 NVARCHAR(100)
+
+SET @D1=/* t1.DocDATE */ '[%1]'
+
+SET @D2=/* t1.DocDATE */ '[%2]'
+
+SET @D3=/* T1.itemcode */ '[%3]'
+
+SELECT  x.Month As Month, X.CODE , sum(X.Grpo)As Issue , Sum(x.Prodissue)As Production,Diff=(sum(X.Grpo) - Sum(x.Prodissue)) FROM (
+
+SELECT month(t1.DocDate) As Month , T1.ITEMCODE aS coDE,
+
+CASE WHEN TransType='20' THEN SUM(T1.INQTY) ELSE '0' END AS grpo,'0' aS Prodissue
+
+FROM OINM T1
+
+WHERE TransType='20'  and t1.DocDate between @D1 and @D2 and t1.ItemCode=@d3
+
+GROUP BY T1.ITEMCODE,TransType,month(t1.DocDate)
+
+UNION ALL
+
+SELECT month(t1.DocDate) As Month ,  T1.ITEMCODE,'0',
+
+CASE WHEN TransType='60' THEN SUM(T1.OUTQTY) ELSE '0' END AS Prodissue
+
+FROM OINM T1
+
+WHERE TransType='60'  and t1.applobj='202' and t1.DocDate between @D1 and @D2  and t1.ItemCode=@d3
+
+GROUP BY T1.ITEMCODE,TransType,month(t1.DocDate)
+
+) AS X
+
+group by X.CODE,x.Month
