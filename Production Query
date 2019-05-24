@@ -1,0 +1,87 @@
+SELECT
+
+  T6.SeriesName,
+
+  T6.Series,
+
+  T0.[DocNum] 'PO No.',
+
+  T0.status 'Status',
+
+  T0.POSTDATE,
+
+  T0.[ItemCode],
+
+  T1.[ItemName],
+
+  T0.[PlannedQty],
+
+  T2.DocEntry 'Rec Doc',
+
+  T3.DocDate 'Rec Date',
+
+  T2.[Quantity],
+
+  T0.CmpltQty AS 'Completed Qty',
+
+  (T0.PlannedQty - T0.CmpltQty - t0.RjctQty) AS 'Open Qty',
+
+  T0.RjctQty AS 'Rejected Qty',
+
+  ISNULL((CASE
+
+    WHEN T2.TranType = 'R' THEN t2.linetotal
+
+  END), 0) AS RejectedVal,
+
+  ISNULL((CASE
+
+    WHEN T2.TranType = 'C' THEN SUM(t2.Quantity)
+
+  END), 0) AS Cmplqty,
+
+  T2.LineTotal 'FG Value',
+
+  SUM(T4.LineTotal) 'RM Value'
+
+FROM OWOR T0
+
+INNER JOIN OITM T1
+
+  ON T0.ItemCode = T1.ItemCode
+
+LEFT JOIN IGN1 T2
+
+  ON T0.DocNum = T2.BaseRef
+
+  AND T0.ItemCode = T2.ItemCode
+
+LEFT JOIN OIGN T3
+
+  ON T2.DocEntry = T3.DocEntry
+
+LEFT JOIN IGE1 T4
+
+  ON T0.DocNum = T4.BaseRef
+
+LEFT JOIN OIGE T5
+
+  ON T4.DocEntry = T5.DocEntry
+
+INNER JOIN NNM1 T6
+
+  ON T0.Series = T6.Series
+
+WHERE T3.docdate >= '[%1]'
+
+AND T0.PostDate <= '[%2]'
+
+AND T3.DocDate >= '[%1]'
+
+AND T3.DocDate <= '[%2]'
+
+AND t6.SeriesName = '[%3]'
+
+AND T0.status = '[%4]'
+
+GROUP BY T0.[DocNum],T0.[ItemCode], T1.[ItemName],T0.[PlannedQty],T0.CmpltQty,t0.RjctQty, T2.[Quantity],T2.DocEntry,T0.status, T0.POSTDATE, T3.DocDate, T2.LineTotal,   T6.SeriesName,         T6.Series,       T0.status, T2.[TranType]
