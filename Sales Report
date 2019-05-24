@@ -1,0 +1,13 @@
+declare @code as varchar(15)
+
+set @code = ( select max(ta.cardcode) from OINV ta where ta.cardcode = [%0])
+
+Select [a] as Cardcode, [B] as Cardname, [c] as Item#, [D] as Descr,[1] as Jan,[2] as Feb,[3]as Mar,[4] as April,[5] as May,[6] as June,[7] as July ,[8] as Aug,[9] as Sept,[10] as Oct ,[11]as Nov,[12] as Dec
+
+from(
+
+SELECT T0.[CardCode] as  A , T0.[CardName] as  B, T1.[ItemCode] as C, T1.[Dscription] as D, sum(T1.[Quantity]) as t,month(T0.[DocDate]) as month FROM OINV T0  INNER JOIN INV1 T1 ON T0.DocEntry = T1.DocEntry WHERE year( T0.[DocDate]) = 2014 and t0.cardcode = @code GROUP BY T0.[CardCode], T0.[CardName], T1.[ItemCode], T1.[Dscription],T0.[DocDate] ) S
+
+pivot
+
+(sum(t) for month IN ([1],[2],[3],[4],[5],[6],[7],[8],[9],[10],[11],[12])) P
