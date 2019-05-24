@@ -1,0 +1,91 @@
+/* SELECT FROM [dbo].[OITT] T0 */
+
+Declare @BOM nvarchar(max)
+
+/* WHERE */
+
+Set @BOM=/* T0.Code */ '[%0]'
+
+select B.Assembly [Product No.],B.Component,(select ItemName from OITM where ItemCode=B.Component)[Component Name],B.[BOM Quantity],
+
+B.[BOM warehouse],
+
+(Select sum (OnHand) from OITW where ItemCode=B.Component and WhsCode=B.[BOM warehouse])[Current Stock in BOM warehouse] 
+
+from (select A.Assembly,CASE when  isnull(A.Component6,'')=''  then 
+
+       (case when  isnull(A.Component5,'')='' then
+
+        (case  when isnull(A.Component4,'')='' then
+
+        (case  when isnull(A.Component3,'')='' then
+
+        (case  when isnull(A.Component2,'')='' then
+
+        A.Component1 else A.Component2 end)else A.Component3 end)
+
+        else A.Component4 end) else  A.Component5  end ) else A.Component6 end Component
+
+        ,CASE when  isnull(A.Qty6,0)=0  then 
+
+       (case when  isnull(A.Qty5,0)=0 then
+
+        (case  when isnull(A.Qty4,0)=0 then
+
+        (case  when isnull(A.Qty3,0)=0 then
+
+        (case  when isnull(A.Qty2,0)=0 then
+
+        A.Qty1 else A.Qty2 end)else A.Qty3 end)
+
+        else A.Qty4 end) else  A.Qty5  end ) else A.Qty6 end [BOM Quantity]
+
+         ,CASE when  isnull(A.whs6,'')=''  then 
+
+       (case when  isnull(A.whs5,'')='' then
+
+        (case  when isnull(A.whs4,'')='' then
+
+        (case  when isnull(A.whs3,'')='' then
+
+        (case  when isnull(A.whs2,'')='' then
+
+        A.whs1 else A.whs2 end)else A.whs3 end)
+
+        else A.whs4 end) else  A.whs5  end ) else A.whs6 end [BOM warehouse]
+
+       
+
+        from (SELECT T0.[Father] as 'Assembly',T0.[code] as 'Component1', T0.Quantity as 'Qty1', T0.warehouse as 'whs1',
+
+t10.[ItemName] 'Description1',T1.[Code] as 'Component2', T1.Quantity as 'Qty2', T1.warehouse as 'whs2',
+
+t11.[ItemName] 'Description2', T2.[Code] as 'Component3', T2.Quantity as 'Qty3', T2.warehouse as 'whs3',
+
+t12.[ItemName] 'Description3', T3.[Code] as 'Component4', T3.Quantity as 'Qty4', T3.warehouse as 'whs4',
+
+t13.[ItemName] 'Description4',T4.[Code] as 'Component5', T4.Quantity as 'Qty5', T4.warehouse as 'whs5',
+
+t14.[ItemName] 'Description5', T5.[Code] as 'Component6', T5.Quantity as 'Qty6', T5.warehouse as 'whs6',
+
+t15.[ItemName] 'Description6' FROM ITT1 T0 LEFT OUTER JOIN
+
+ITT1 T1 on T0.Code = T1.Father LEFT OUTER JOIN ITT1 T2 on
+
+T2.Father =T1.Code  LEFT OUTER JOIN ITT1 T3 on T2.Code = T3.Father
+
+LEFT OUTER JOIN ITT1 T4 on T3.Code = T4.Father LEFT OUTER JOIN
+
+ITT1 T5 on T4.Code = T5.Father LEFT OUTER JOIN ITT1 T6 on
+
+T5.Code = T6.Father left outer join oitm t20 on t0.father = t20.itemcode
+
+left outer join oitm t10 on t0.code = t10.itemcode left outer join oitm t11
+
+on t1.code = t11.itemcode left outer join oitm t12 on t2.code = t12.itemcode
+
+left outer join oitm t13 on t3.code = t13.itemcode left outer join
+
+oitm t14 on t4.code = t14.itemcode left outer join oitm t15 on t5.code = t15.itemcode
+
+where T0.Father=@BOM)A)B
