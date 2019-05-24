@@ -1,0 +1,66 @@
+SELECT T0.ItemCode as 'Item Code',
+
+t2.Itemname as 'Item Name',
+
+t3.itmsgrpnam as 'Item Group',
+
+t4.Cardcode as 'Default Supplier',
+
+t4.cardname as 'Supplier Name',
+
+t5.groupname as 'Group Code',
+
+t6.Warehouse as 'Ware House',
+
+SUM(T0.InQty-T0.OutQty) AS 'Inventory Qty',
+
+sum(t0.transvalue) as 'Inventory Value'
+
+FROM dbo.OINM T0
+
+inner join oitm t2 on t2.itemcode = t0.itemcode
+
+left outer JOIN OITB T3 ON t3.ItmsGrpCod = T2.ItmsGrpCod
+
+left outer join ocrd t4 on t4.CardCode = t2.cardcode
+
+left outer join ocrg t5 on t5.GroupCode = t4.groupcode
+
+WHERE T0.DocDate <= '[%0]' and t6.Warehouse='[%1]'
+
+GROUP BY T0.ItemCode,t3.itmsgrpnam,t2.Itemname,t4.Cardcode,t4.cardname,t5.groupname
+
+------------------------------------------------------------------------------------------
+by ware house
+SELECT T0.ItemCode as 'Item Code',
+
+t2.Itemname as 'Item Name',
+
+t3.itmsgrpnam as 'Item Group',
+
+t4.Cardcode as 'Default Supplier',
+
+t4.cardname as 'Supplier Name',
+
+t5.groupname as 'Group Code',
+
+T0.Warehouse as 'Ware House',
+
+SUM(T0.InQty-T0.OutQty) AS 'Inventory Qty',
+
+sum(t0.transvalue) as 'Inventory Value'
+
+FROM dbo.OINM T0
+
+inner join oitm t2 on t2.itemcode = t0.itemcode
+
+
+left outer JOIN OITB T3 ON t3.ItmsGrpCod = T2.ItmsGrpCod
+
+left outer join ocrd t4 on t4.CardCode = t2.cardcode
+
+left outer join ocrg t5 on t5.GroupCode = t4.groupcode
+
+WHERE T0.DocDate <= '[%0]' and T0.Warehouse='[%1]'
+
+GROUP BY T0.ItemCode,t3.itmsgrpnam,t2.Itemname,t4.Cardcode,t4.cardname,t5.groupname,t0.Warehouse
